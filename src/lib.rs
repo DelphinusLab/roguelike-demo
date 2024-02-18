@@ -1,8 +1,7 @@
-#[macro_use]
-extern crate num_derive;
+#![deny(warnings)]
 
-use engine::Engine;
-use wasm_bindgen::prelude::*;
+#[macro_use]
+extern crate lazy_static;
 
 mod config;
 pub mod engine;

@@ -1,55 +1,62 @@
-use rand::{
-    rngs::{OsRng, ThreadRng},
-    thread_rng, Rng,
-};
+#[cfg(test)]
+mod tests {
+    use rand::{thread_rng, Rng};
 
-use crate::engine::{Action, Engine, TurnResult};
+    use crate::engine::{Action, Engine, TurnResult};
 
-#[test]
-fn test() {
-    let mut engine = Engine::init();
+    #[test]
+    fn test() {
+        let mut engine = Engine::init();
 
-    let mut rng = thread_rng();
+        let mut rng = thread_rng();
 
-    loop {
-        engine.challenge_next_floor(&mut rng);
+        loop {
+            let mut combat = engine.challenge_next_floor(&mut rng);
 
-        let mut retry = 3;
-        let mut player_win = false;
-        while retry > 0 {
-            let card_index = rng.gen_range(0..engine.player.number_of_hand());
-            let card = engine.player.peek_card(card_index);
+            loop {
+                println!("player\n{:?}", combat.hero.state);
+                println!("enemy\n{:?}", combat.enemy);
 
-            if engine.player.current_power >= card.power() {
-                let result = engine.action(Action::PlayCard(card_index), &mut rng);
+                let mut retry = 3;
+                let mut player_win = false;
+                while retry > 0 {
+                    let card_index = rng.gen_range(0..combat.hero.hand.len());
+                    let card = combat.hero.hand.get(card_index).unwrap();
 
-                match result {
-                    TurnResult::PlayerWin => {
-                        player_win = true;
-                        break;
+                    if combat.hero.state.current_power >= card.power() {
+                        println!("play a card: {:?}", card);
+
+                        let result = combat.action(Action::PlayCard(card_index), &mut rng);
+
+                        match result {
+                            TurnResult::PlayerWin => {
+                                player_win = true;
+                                break;
+                            }
+                            TurnResult::EnemyWin => {
+                                println!("enemy win, floor: {}", engine.floor);
+
+                                return;
+                            }
+                            TurnResult::Continue => (),
+                        }
                     }
-                    TurnResult::EnemyWin => {
-                        println!("enemy win");
 
-                        return;
-                    }
-                    TurnResult::Continue => (),
+                    retry -= 1;
+                }
+
+                if player_win {
+                    break;
+                }
+
+                let result = combat.action(Action::EndTurn, &mut rng);
+
+                if result == TurnResult::EnemyWin {
+                    println!("enemy win, floor: {}", engine.floor);
+
+                    return;
                 }
             }
-
-            retry -= 1;
-        }
-
-        if player_win {
-            continue;
-        }
-
-        let result = engine.action(Action::EndTurn, &mut rng);
-
-        if result == TurnResult::EnemyWin {
-            println!("enemy win");
-
-            return;
         }
     }
 }

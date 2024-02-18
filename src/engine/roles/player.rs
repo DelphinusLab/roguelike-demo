@@ -1,76 +1,83 @@
 use std::marker::PhantomData;
 
-use rand::Rng;
-
 use crate::{
     config::PICK_CARDS_EACH_TURN,
     engine::{
-        cards::Card,
+        cards::{defend::DefendCard, strike::StrikeCard, Card, SkillEffect},
         state::{CommonState, Effect},
     },
 };
+use rand::Rng;
 
 use super::CommonAction;
 
+#[derive(Debug)]
 pub struct Player<R: Rng> {
-    pub(crate) common_state: CommonState,
-
-    power: i32,
-    asserts: Vec<Card>,
-
-    pub(crate) current_power: i32,
-    pub(crate) hand: Vec<Card>,
-    candidate_cards: Vec<Card>,
-    discard_cards: Vec<Card>,
+    pub(crate) hp: i32,
+    pub(crate) power: i32,
+    pub(crate) cards: Vec<Box<dyn Card>>,
 
     _mark: PhantomData<R>,
 }
 
 impl<R: Rng> Player<R> {
-    pub fn init(hp: i32, power: i32, mut extra_cards: Vec<Card>) -> Self {
-        let mut cards = vec![
-            Card::Strike,
-            Card::Strike,
-            Card::Strike,
-            Card::Strike,
-            Card::Strike,
-            Card::Defend,
-            Card::Defend,
-            Card::Defend,
-            Card::Defend,
-            Card::Defend,
+    pub fn init(hp: i32, power: i32, mut extra_cards: Vec<Box<dyn Card>>) -> Self {
+        let mut cards: Vec<Box<dyn Card>> = vec![
+            Box::new(StrikeCard),
+            Box::new(StrikeCard),
+            Box::new(StrikeCard),
+            Box::new(StrikeCard),
+            Box::new(StrikeCard),
+            Box::new(DefendCard),
+            Box::new(DefendCard),
+            Box::new(DefendCard),
+            Box::new(DefendCard),
+            Box::new(DefendCard),
         ];
         cards.append(&mut extra_cards);
 
         Self {
-            common_state: CommonState::new(hp),
+            hp,
             power,
-            asserts: cards.clone(),
-
-            current_power: power,
-            hand: vec![],
-            candidate_cards: cards,
-            discard_cards: vec![],
+            cards,
 
             _mark: PhantomData,
         }
     }
+}
 
-    // for auto test
-    #[cfg(test)]
-    pub(crate) fn peek_card(&self, card_index: usize) -> &Card {
-        self.hand.get(card_index).as_ref().unwrap()
-    }
+#[derive(Debug)]
+pub(crate) struct PlayerState {
+    pub(crate) common: CommonState,
+    pub(crate) current_power: i32,
+}
 
-    pub(crate) fn pick_a_card(&mut self, card_index: usize) -> &Card {
-        let card = self.hand.remove(card_index);
+#[derive(Debug)]
+pub(crate) struct Hero<'a, R: Rng> {
+    player: &'a Player<R>,
 
-        assert!(self.current_power >= card.power());
-        self.current_power -= card.power();
+    pub(crate) state: PlayerState,
+    pub(crate) hand: Vec<&'a Box<dyn Card>>,
+    candidate_cards: Vec<&'a Box<dyn Card>>,
+    discard_cards: Vec<&'a Box<dyn Card>>,
+}
 
-        self.discard_cards.push(card);
+impl<'a, R: Rng> Hero<'a, R> {
+    pub(crate) fn new(player: &'a Player<R>) -> Self {
+        Self {
+            player,
 
-        self.discard_cards.last().unwrap()
+            state: PlayerState {
+                common: CommonState {
+                    hp: player.hp,
+                    block: 0,
+                },
+                current_power: player.power,
+            },
+            hand: vec![],
+            candidate_cards: player.cards.iter().collect(),
+            discard_cards: vec![],
+        }
     }
 
     // pick cards from candidates
@@ -91,38 +98,37 @@ impl<R: Rng> Player<R> {
             self.hand.push(card);
         }
     }
-
-    pub(crate) fn challenge_next_floor(&mut self, rng: &mut R) {
-        self.candidate_cards = self.asserts.clone();
-
-        self.discard_cards.clear();
-        self.hand.clear();
-        self.pick_cards(rng);
-
-        self.common_state.block = 0;
-    }
-
-    #[cfg(test)]
-    pub(crate) fn number_of_hand(&self) -> usize {
-        self.hand.len()
-    }
 }
 
-impl<R: Rng> CommonAction<R> for Player<R> {
-    fn is_dead(&self) -> bool {
-        self.common_state.is_dead()
+impl<'a, R: Rng> CommonAction<R> for Hero<'a, R> {
+    type Skill = usize;
+
+    fn attack(&mut self, card_index: Self::Skill) -> SkillEffect {
+        let card = self.hand.remove(card_index);
+
+        assert!(card.power() <= self.state.current_power);
+        self.state.current_power -= card.power();
+
+        self.discard_cards.push(card);
+
+        card.effect()
     }
 
     fn apply_effect(&mut self, effect: Effect) {
-        self.common_state.apply_effect(&effect);
+        self.state.common.apply_effect(&effect);
     }
 
-    fn end_turn(&mut self, rng: &mut R) {
-        self.current_power = self.power;
+    fn is_dead(&self) -> bool {
+        self.state.common.hp <= 0
+    }
+
+    fn prepare_next_turn(&mut self, rng: &mut R) {
+        self.state.current_power = self.player.power;
+        self.state.common.block = 0;
 
         self.discard_cards.append(&mut self.hand);
         self.pick_cards(rng);
-
-        self.common_state.block = 0;
     }
+
+    fn end_turn(&mut self, _rng: &mut R) {}
 }

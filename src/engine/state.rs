@@ -5,14 +5,6 @@ pub(crate) struct CommonState {
 }
 
 impl CommonState {
-    pub(crate) fn new(hp: i32) -> Self {
-        CommonState { hp, block: 0 }
-    }
-
-    pub(crate) fn is_dead(&self) -> bool {
-        self.hp <= 0
-    }
-
     pub(crate) fn apply_effect(&mut self, effect: &Effect) {
         self.block += effect.block;
 
@@ -32,7 +24,8 @@ impl CommonState {
     }
 }
 
-pub(crate) struct Effect {
+#[derive(Debug)]
+pub struct Effect {
     pub(crate) hp: i32,
     pub(crate) block: i32,
 }
