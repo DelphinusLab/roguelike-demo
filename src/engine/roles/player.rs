@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{fmt::Display, marker::PhantomData};
 
 use crate::{
     config::PICK_CARDS_EACH_TURN,
@@ -7,6 +7,7 @@ use crate::{
         state::{CommonState, Effect},
     },
 };
+use colored::Colorize;
 use rand::Rng;
 
 use super::CommonAction;
@@ -47,17 +48,63 @@ impl<R: Rng> Player<R> {
 }
 
 #[derive(Debug)]
-pub(crate) struct PlayerState {
+pub struct PlayerState {
     pub(crate) common: CommonState,
     pub(crate) current_power: i32,
 }
 
+impl Display for PlayerState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "hp: {}, block: {}, power: {}",
+            self.common.hp, self.common.block, self.current_power,
+        ))
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct HandOfCards<'a>(pub(crate) Vec<&'a Box<dyn Card>>);
+
+impl<'a> HandOfCards<'a> {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn get(&self, index: usize) -> Option<&'a Box<dyn Card>> {
+        self.0.get(index).copied()
+    }
+}
+
+impl<'a> Display for HandOfCards<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (index, card) in self.0.iter().enumerate() {
+            let effect = card.effect();
+
+            let to_myself = effect.to_myself();
+
+            write!(
+                f,
+                "{}\t{}\t{}\n",
+                index + 1,
+                if to_myself {
+                    format!("{:?}", card).green()
+                } else {
+                    format!("{:?}", card).red()
+                },
+                effect
+            )?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
-pub(crate) struct Hero<'a, R: Rng> {
+pub struct Hero<'a, R: Rng> {
     player: &'a Player<R>,
 
-    pub(crate) state: PlayerState,
-    pub(crate) hand: Vec<&'a Box<dyn Card>>,
+    pub state: PlayerState,
+    pub hand: HandOfCards<'a>,
     candidate_cards: Vec<&'a Box<dyn Card>>,
     discard_cards: Vec<&'a Box<dyn Card>>,
 }
@@ -74,7 +121,7 @@ impl<'a, R: Rng> Hero<'a, R> {
                 },
                 current_power: player.power,
             },
-            hand: vec![],
+            hand: HandOfCards::default(),
             candidate_cards: player.cards.iter().collect(),
             discard_cards: vec![],
         }
@@ -95,7 +142,7 @@ impl<'a, R: Rng> Hero<'a, R> {
             let index = rng.gen_range(0..len);
             // LINKED LIST?
             let card = self.candidate_cards.remove(index);
-            self.hand.push(card);
+            self.hand.0.push(card);
         }
     }
 }
@@ -104,7 +151,7 @@ impl<'a, R: Rng> CommonAction<R> for Hero<'a, R> {
     type Skill = usize;
 
     fn attack(&mut self, card_index: Self::Skill) -> SkillEffect {
-        let card = self.hand.remove(card_index);
+        let card = self.hand.0.remove(card_index);
 
         assert!(card.power() <= self.state.current_power);
         self.state.current_power -= card.power();
@@ -126,7 +173,7 @@ impl<'a, R: Rng> CommonAction<R> for Hero<'a, R> {
         self.state.current_power = self.player.power;
         self.state.common.block = 0;
 
-        self.discard_cards.append(&mut self.hand);
+        self.discard_cards.append(&mut self.hand.0);
         self.pick_cards(rng);
     }
 

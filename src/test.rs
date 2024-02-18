@@ -6,7 +6,7 @@ mod tests {
 
     #[test]
     fn test() {
-        let mut engine = Engine::init();
+        let mut engine = Engine::new_game();
 
         let mut rng = thread_rng();
 

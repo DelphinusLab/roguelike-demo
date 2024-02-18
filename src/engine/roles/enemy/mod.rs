@@ -12,11 +12,13 @@ use super::CommonAction;
 pub(crate) mod monster;
 
 pub(crate) trait Monster: Sync + Send {
+    fn name(&self) -> &'static str;
     fn hp(&self) -> i32;
     fn skills(&self) -> Vec<Box<dyn Fn(usize) -> SkillEffect>>;
 
     fn new(&self) -> Enemy {
         Enemy {
+            name: self.name(),
             state: CommonState {
                 hp: self.hp(),
                 block: 0,
@@ -26,8 +28,9 @@ pub(crate) trait Monster: Sync + Send {
     }
 }
 
-pub(crate) struct Enemy {
-    pub(crate) state: CommonState,
+pub struct Enemy {
+    pub name: &'static str,
+    pub state: CommonState,
     pub(crate) actions: Vec<Box<dyn Fn(usize) -> SkillEffect>>,
 }
 
@@ -38,7 +41,7 @@ impl Debug for Enemy {
 }
 
 impl Enemy {
-    pub(crate) fn next_action(&self, turn: usize) -> SkillEffect {
+    pub fn next_action(&self, turn: usize) -> SkillEffect {
         self.actions[turn % self.actions.len()](turn)
     }
 }

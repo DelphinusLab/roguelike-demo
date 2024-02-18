@@ -3,8 +3,9 @@ use rand::Rng;
 use self::{cards::SkillEffect, combat::Combat, roles::player::Player};
 use crate::config::{DEBUG, DEFAULT_HP, DEFAULT_POWER};
 
+pub mod combat;
+
 mod cards;
-mod combat;
 mod roles;
 mod state;
 
@@ -22,11 +23,11 @@ pub enum Action {
 
 pub struct Engine<R: Rng> {
     pub(crate) player: Player<R>,
-    pub(crate) floor: usize,
+    pub floor: usize,
 }
 
 impl<R: Rng> Engine<R> {
-    pub fn init() -> Self {
+    pub fn new_game() -> Self {
         Self {
             player: Player::init(DEFAULT_HP, DEFAULT_POWER, vec![]),
             floor: 0,

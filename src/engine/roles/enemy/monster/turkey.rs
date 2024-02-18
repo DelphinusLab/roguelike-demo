@@ -3,6 +3,10 @@ use crate::engine::{cards::SkillEffect, roles::enemy::Monster, state::Effect};
 pub(super) struct Turkey;
 
 impl Monster for Turkey {
+    fn name(&self) -> &'static str {
+        "turkey"
+    }
+
     fn hp(&self) -> i32 {
         15
     }

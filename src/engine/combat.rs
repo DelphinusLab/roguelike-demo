@@ -12,10 +12,10 @@ use super::{
 };
 
 pub struct Combat<'a, R: Rng> {
-    pub(crate) turn: usize,
+    pub turn: usize,
 
-    pub(crate) hero: Hero<'a, R>,
-    pub(crate) enemy: Enemy,
+    pub hero: Hero<'a, R>,
+    pub enemy: Enemy,
 }
 
 impl<'a, R: Rng> Combat<'a, R> {
@@ -37,6 +37,17 @@ impl<'a, R: Rng> Combat<'a, R> {
     }
 
     fn hint_a_card(&mut self, card_index: usize) -> TurnResult {
+        let card = self.hero.hand.get(card_index);
+        if card.is_none() {
+            return TurnResult::Continue;
+        }
+
+        if let Some(card) = card {
+            if card.power() > self.hero.state.current_power {
+                return TurnResult::Continue;
+            }
+        }
+
         let effect = self.hero.attack(card_index);
 
         match effect {
