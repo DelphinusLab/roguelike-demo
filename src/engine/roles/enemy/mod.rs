@@ -1,7 +1,5 @@
 use std::fmt::Debug;
 
-use rand::Rng;
-
 use crate::engine::{
     cards::SkillEffect,
     state::{CommonState, Effect},
@@ -46,7 +44,7 @@ impl Enemy {
     }
 }
 
-impl<R: Rng> CommonAction<R> for Enemy {
+impl CommonAction for Enemy {
     // depends on round
     type Skill = usize;
 
@@ -62,9 +60,9 @@ impl<R: Rng> CommonAction<R> for Enemy {
         self.state.hp <= 0
     }
 
-    fn prepare_next_turn(&mut self, _rng: &mut R) {
+    fn prepare_next_turn(&mut self) {
         self.state.block = 0;
     }
 
-    fn end_turn(&mut self, _rng: &mut R) {}
+    fn end_turn(&mut self) {}
 }

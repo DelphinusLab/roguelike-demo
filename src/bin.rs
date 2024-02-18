@@ -1,15 +1,13 @@
 use std::io::{stdin, stdout, Write};
 
 use colored::{ColoredString, Colorize};
-use rand::Rng;
-use rand_core::OsRng;
 use roguelike_demo::engine::{combat::Combat, Action, Engine, TurnResult};
 
 fn warning<'a>(str: &'a str) -> ColoredString {
     str.on_yellow()
 }
 
-fn print_game_info<'a, R: Rng>(floor: usize, combat: &Combat<'a, R>) {
+fn print_game_info<'a>(floor: usize, combat: &Combat<'a>) {
     print!("{} {}\t", "Floor ".yellow(), floor.to_string().yellow());
 
     println!(
@@ -23,23 +21,23 @@ fn print_game_info<'a, R: Rng>(floor: usize, combat: &Combat<'a, R>) {
     );
 }
 
-fn print_hand_of_cards<'a, R: Rng>(combat: &Combat<'a, R>) {
+fn print_hand_of_cards<'a>(combat: &Combat<'a>) {
     println!("Your hand of cards:");
     println!("{}", combat.hero.hand);
 }
 
-fn print_player_state<'a, R: Rng>(combat: &Combat<'a, R>) {
-    println!("{}", format!("{}\t\t{}", "You", combat.hero.state));
+fn print_player_state<'a>(combat: &Combat<'a>) {
+    println!("{}", format!("{}\t\t{}", "You", combat.hero));
 }
 
-fn print_enemy_state<'a, R: Rng>(combat: &Combat<'a, R>) {
+fn print_enemy_state<'a>(combat: &Combat<'a>) {
     println!(
         "{}",
         format!("Enemy({})\t{}", combat.enemy.name, combat.enemy.state)
     );
 }
 
-fn print_enemy_next_action<'a, R: Rng>(combat: &Combat<'a, R>) {
+fn print_enemy_next_action<'a>(combat: &Combat<'a>) {
     println!(
         "{}",
         warning(&format!(
@@ -50,7 +48,7 @@ fn print_enemy_next_action<'a, R: Rng>(combat: &Combat<'a, R>) {
     );
 }
 
-fn print_combat_in_progress<'a, R: Rng>(floor: usize, combat: &Combat<'a, R>) {
+fn print_combat_in_progress<'a>(floor: usize, combat: &Combat<'a>) {
     print_game_info(floor, combat);
 
     print_player_state(combat);
@@ -61,15 +59,13 @@ fn print_combat_in_progress<'a, R: Rng>(floor: usize, combat: &Combat<'a, R>) {
 }
 
 fn main() {
-    let mut rng = OsRng;
-
     let mut engine = Engine::new_game();
 
     println!("New game");
 
     loop {
         let floor = engine.floor;
-        let mut combat = engine.challenge_next_floor(&mut rng);
+        let mut combat = engine.challenge_next_floor();
 
         loop {
             let mut player_win = false;
@@ -87,7 +83,7 @@ fn main() {
                 if card_index == 0 {
                     break;
                 } else {
-                    let result = combat.action(Action::PlayCard(card_index - 1), &mut rng);
+                    let result = combat.action(Action::PlayCard(card_index - 1));
                     if result == TurnResult::PlayerWin {
                         println!("You win");
 
@@ -107,7 +103,7 @@ fn main() {
                 break;
             }
 
-            let result = combat.action(Action::EndTurn, &mut rng);
+            let result = combat.action(Action::EndTurn);
 
             if result == TurnResult::EnemyWin {
                 println!("Enemy win");

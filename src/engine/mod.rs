@@ -1,6 +1,4 @@
-use rand::Rng;
-
-use self::{cards::SkillEffect, combat::Combat, roles::player::Player};
+use self::{combat::Combat, roles::player::Player};
 use crate::config::{DEBUG, DEFAULT_HP, DEFAULT_POWER};
 
 pub mod combat;
@@ -21,12 +19,12 @@ pub enum Action {
     EndTurn,
 }
 
-pub struct Engine<R: Rng> {
-    pub(crate) player: Player<R>,
+pub struct Engine {
+    pub(crate) player: Player,
     pub floor: usize,
 }
 
-impl<R: Rng> Engine<R> {
+impl Engine {
     pub fn new_game() -> Self {
         Self {
             player: Player::init(DEFAULT_HP, DEFAULT_POWER, vec![]),
@@ -34,12 +32,8 @@ impl<R: Rng> Engine<R> {
         }
     }
 
-    pub fn peek_enemy_next_action(&self, combat: &Combat<R>) -> SkillEffect {
-        combat.peek_enemy_next_action()
-    }
-
-    pub fn challenge_next_floor(&mut self, rng: &mut R) -> Combat<R> {
-        let combat = Combat::new(rng, self.floor, &self.player);
+    pub fn challenge_next_floor(&mut self) -> Combat {
+        let combat = Combat::new(self.floor, &mut self.player);
 
         self.floor += 1;
 
