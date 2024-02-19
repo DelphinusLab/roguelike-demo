@@ -7,9 +7,6 @@ use crate::{
         state::{CommonState, Effect},
     },
 };
-use colored::Colorize;
-use rand::Rng;
-use rand_core::OsRng;
 
 use super::CommonAction;
 
@@ -56,20 +53,12 @@ impl HandOfCards {
 impl Display for HandOfCards {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (index, card) in self.0.iter().enumerate() {
-            let effect = card.effect();
-
-            let to_myself = effect.to_myself();
-
             write!(
                 f,
                 "{}\t{}\t{}\n",
                 index + 1,
-                if to_myself {
-                    format!("{:?}", card).green()
-                } else {
-                    format!("{:?}", card).red()
-                },
-                effect
+                format!("{:?}", card),
+                card.effect()
             )?;
         }
 
@@ -106,7 +95,8 @@ impl<'a> Hero<'a> {
 
     // pick cards from candidates
     fn pick_cards(&mut self) {
-        let mut rng = OsRng::default();
+        // FIXME: how to use rng in wasm
+        // let mut rng = OsRng::default();
 
         for _ in 0..PICK_CARDS_EACH_TURN {
             if self.candidate_cards.len() == 0 {
@@ -118,7 +108,9 @@ impl<'a> Hero<'a> {
 
             assert!(len > 0);
 
-            let index = rng.gen_range(0..len);
+            // FIXME: rng.gen_range(0..len)
+            let index = 0;
+
             // LINKED LIST?
             let card = self.candidate_cards.remove(index);
             self.hand.0.push(card);

@@ -1,7 +1,7 @@
 use std::io::{stdin, stdout, Write};
 
 use colored::{ColoredString, Colorize};
-use roguelike_demo::engine::{combat::Combat, Action, Engine, TurnResult};
+use roguelike_core::engine::{combat::Combat, Action, Engine, TurnResult};
 
 fn warning<'a>(str: &'a str) -> ColoredString {
     str.on_yellow()
