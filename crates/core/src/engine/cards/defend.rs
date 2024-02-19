@@ -6,6 +6,10 @@ use super::{Card, SkillEffect};
 pub(crate) struct DefendCard;
 
 impl Card for DefendCard {
+    fn name(&self) -> &'static str {
+        "defend"
+    }
+
     fn power(&self) -> i32 {
         1
     }

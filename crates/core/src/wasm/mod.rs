@@ -1,6 +1,9 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::engine::{combat::Combat, Action, Engine};
+use crate::{
+    engine::{combat::Combat, Action, Engine},
+    utils::state::GameState,
+};
 
 static mut ENGINE: Option<Engine> = None;
 static mut COMBAT: Option<Combat<'_>> = None;
@@ -36,4 +39,12 @@ pub fn end_turn() {
     unsafe {
         COMBAT.as_mut().unwrap().action(Action::EndTurn);
     }
+}
+
+#[wasm_bindgen]
+pub fn state() -> String {
+    let state =
+        unsafe { GameState::from(ENGINE.as_ref().unwrap().floor, &COMBAT.as_ref().unwrap()) };
+
+    serde_json::to_string_pretty(&state).unwrap()
 }

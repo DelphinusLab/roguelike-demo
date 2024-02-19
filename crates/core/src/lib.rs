@@ -3,8 +3,10 @@
 #[macro_use]
 extern crate lazy_static;
 
-mod config;
 pub mod engine;
+pub mod utils;
+
+mod config;
 mod test;
 
 #[cfg(target_arch = "wasm32")]

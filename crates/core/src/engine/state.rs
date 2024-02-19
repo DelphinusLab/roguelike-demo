@@ -1,9 +1,11 @@
 use std::fmt::Display;
 
-#[derive(Debug)]
+use serde::Serialize;
+
+#[derive(Debug, Serialize)]
 pub struct Effect {
-    pub(crate) hp: i32,
-    pub(crate) block: i32,
+    pub hp: i32,
+    pub block: i32,
 }
 
 #[derive(Debug)]

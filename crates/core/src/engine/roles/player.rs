@@ -12,7 +12,7 @@ use super::CommonAction;
 
 #[derive(Debug)]
 pub struct Player {
-    pub(crate) hp: i32,
+    pub hp: i32,
     pub(crate) power: i32,
     pub(crate) cards: Vec<Rc<Box<dyn Card>>>,
 }
@@ -68,7 +68,7 @@ impl Display for HandOfCards {
 
 #[derive(Debug)]
 pub struct Hero<'a> {
-    player: &'a mut Player,
+    pub player: &'a mut Player,
 
     pub power: i32,
     pub block: i32,

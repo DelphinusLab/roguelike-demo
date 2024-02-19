@@ -1,11 +1,13 @@
 use std::fmt::{Debug, Display};
 
+use serde::Serialize;
+
 use super::state::Effect;
 
 pub(crate) mod defend;
 pub(crate) mod strike;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum SkillEffect {
     Myself(Effect),
     Opposite(Effect),
@@ -34,6 +36,7 @@ impl Display for SkillEffect {
 }
 
 pub trait Card: Debug {
+    fn name(&self) -> &'static str;
     fn power(&self) -> i32;
     fn effect(&self) -> SkillEffect;
 }

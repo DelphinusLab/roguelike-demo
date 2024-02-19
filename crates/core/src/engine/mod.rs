@@ -1,9 +1,9 @@
 use self::{combat::Combat, roles::player::Player};
 use crate::config::{DEBUG, DEFAULT_HP, DEFAULT_POWER};
 
+pub mod cards;
 pub mod combat;
 
-mod cards;
 mod roles;
 mod state;
 
