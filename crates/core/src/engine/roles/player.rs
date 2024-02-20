@@ -35,6 +35,10 @@ impl Player {
 
         Self { hp, power, cards }
     }
+
+    pub fn is_dead(&self) -> bool {
+        self.hp <= 0
+    }
 }
 
 #[derive(Debug, Default)]

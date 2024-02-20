@@ -1,4 +1,6 @@
+use crate::engine::roles::CommonAction;
 use wasm_bindgen::prelude::wasm_bindgen;
+use zkwasm_rust_sdk::{require, wasm_input};
 
 use crate::{
     engine::{combat::Combat, Action, Engine},
@@ -47,4 +49,49 @@ pub fn state() -> String {
         unsafe { GameState::from(ENGINE.as_ref().unwrap().floor, &COMBAT.as_ref().unwrap()) };
 
     serde_json::to_string_pretty(&state).unwrap()
+}
+
+#[inline(always)]
+fn public_input() -> u64 {
+    unsafe { wasm_input(1) }
+}
+
+#[inline(always)]
+fn assert_hero_alive() {
+    unsafe { require(!COMBAT.as_ref().unwrap().hero.is_dead()) }
+}
+
+#[inline(always)]
+fn assert_game_finish() {
+    unsafe { require(ENGINE.as_ref().unwrap().player.is_dead()) }
+}
+
+const COMMAND_END_TURN: u64 = 0u64;
+
+#[wasm_bindgen]
+pub fn zkmain() {
+    new_game();
+
+    let command_len = public_input();
+    challenge_next_floor();
+
+    for _ in 0..command_len {
+        assert_hero_alive();
+
+        let command = public_input();
+
+        if command == COMMAND_END_TURN {
+            end_turn();
+        } else {
+            play_a_card(command as usize - 1);
+        }
+
+        unsafe {
+            if COMBAT.as_ref().unwrap().enemy.is_dead() {
+                challenge_next_floor();
+            }
+        }
+    }
+
+    assert_game_finish();
 }

@@ -3,8 +3,8 @@ use crate::config::{DEBUG, DEFAULT_HP, DEFAULT_POWER};
 
 pub mod cards;
 pub mod combat;
+pub(crate) mod roles;
 
-mod roles;
 mod state;
 
 #[derive(PartialEq)]
