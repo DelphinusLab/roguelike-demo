@@ -22,13 +22,13 @@ impl Player {
         let mut cards: Vec<Rc<Box<dyn Card>>> = vec![
             Rc::new(Box::new(StrikeCard)),
             Rc::new(Box::new(StrikeCard)),
+            Rc::new(Box::new(DefendCard)),
+            Rc::new(Box::new(StrikeCard)),
+            Rc::new(Box::new(DefendCard)),
+            Rc::new(Box::new(DefendCard)),
+            Rc::new(Box::new(DefendCard)),
             Rc::new(Box::new(StrikeCard)),
             Rc::new(Box::new(StrikeCard)),
-            Rc::new(Box::new(StrikeCard)),
-            Rc::new(Box::new(DefendCard)),
-            Rc::new(Box::new(DefendCard)),
-            Rc::new(Box::new(DefendCard)),
-            Rc::new(Box::new(DefendCard)),
             Rc::new(Box::new(DefendCard)),
         ];
         cards.append(&mut extra_cards);
