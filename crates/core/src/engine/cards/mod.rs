@@ -5,6 +5,8 @@ use serde::Serialize;
 use super::state::Effect;
 
 pub(crate) mod defend;
+pub(crate) mod heal;
+pub(crate) mod punch;
 pub(crate) mod strike;
 
 #[derive(Debug, Serialize)]

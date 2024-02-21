@@ -3,7 +3,10 @@ use std::{fmt::Display, rc::Rc};
 use crate::{
     config::PICK_CARDS_EACH_TURN,
     engine::{
-        cards::{defend::DefendCard, strike::StrikeCard, Card, SkillEffect},
+        cards::{
+            defend::DefendCard, heal::HealCard, punch::PunchCard, strike::StrikeCard, Card,
+            SkillEffect,
+        },
         state::{CommonState, Effect},
     },
 };
@@ -24,9 +27,9 @@ impl Player {
             Rc::new(Box::new(StrikeCard)),
             Rc::new(Box::new(DefendCard)),
             Rc::new(Box::new(StrikeCard)),
+            Rc::new(Box::new(PunchCard)),
             Rc::new(Box::new(DefendCard)),
-            Rc::new(Box::new(DefendCard)),
-            Rc::new(Box::new(DefendCard)),
+            Rc::new(Box::new(HealCard)),
             Rc::new(Box::new(StrikeCard)),
             Rc::new(Box::new(StrikeCard)),
             Rc::new(Box::new(DefendCard)),
